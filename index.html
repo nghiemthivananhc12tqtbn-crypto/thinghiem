@@ -1,0 +1,367 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{padding:16px;font-family:sans-serif;max-width:620px;margin:0 auto}
+h2{font-size:17px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:14px}
+.score{display:inline-flex;align-items:center;background:#EAF3DE;border-radius:20px;padding:3px 12px;font-size:12px;color:#3B6D11;font-weight:500;float:right}
+.prog-wrap{height:4px;background:var(--color-border-tertiary,#eee);border-radius:2px;margin-bottom:10px}
+.prog{height:4px;border-radius:2px;background:#3B8BD4;transition:width .4s}
+.dots{display:flex;gap:6px;margin-bottom:14px}
+.dot{flex:1;height:4px;border-radius:2px;background:var(--color-border-tertiary,#ddd);transition:background .3s}
+.dot.active{background:#3B8BD4}
+.dot.done{background:#9FE1CB}
+.card{background:var(--color-background-primary,#fff);border:0.5px solid var(--color-border-tertiary,#ddd);border-radius:12px;padding:16px;margin-bottom:12px}
+.step-lbl{font-size:12px;color:var(--color-text-secondary);margin-bottom:10px}
+.sec-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px}
+.sub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.sub-btn{border:1.5px solid var(--color-border-tertiary,#ddd);border-radius:10px;padding:10px 6px;cursor:pointer;text-align:center;background:var(--color-background-primary,#fff);transition:all .2s}
+.sub-btn:hover{border-color:#3B8BD4;background:#E6F1FB}
+.sub-btn.sel{border-color:#3B8BD4;background:#E6F1FB}
+.sub-icon{font-size:26px;margin-bottom:4px}
+.sub-name{font-size:12px;color:var(--color-text-primary);font-weight:500}
+.sub-hint{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
+.pred-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.pred-lbl{font-size:12px;color:var(--color-text-secondary)}
+.pred-btn{border:0.5px solid var(--color-border-secondary,#ccc);border-radius:20px;padding:5px 14px;font-size:12px;cursor:pointer;background:transparent;color:var(--color-text-primary);transition:all .15s}
+.pred-btn:hover{background:var(--color-background-secondary,#f5f5f5)}
+.pred-btn.sel{background:#3B8BD4;color:#fff;border-color:#3B8BD4}
+.glass-area{display:flex;flex-direction:column;align-items:center;gap:8px;margin:12px 0}
+.glass-cap{font-size:11px;color:var(--color-text-secondary);text-align:center}
+.act-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+.btn-main{background:#3B8BD4;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn-main:hover{background:#185FA5}
+.btn-main:disabled{background:#ccc;color:#999;cursor:not-allowed}
+.btn-sec{background:transparent;border:0.5px solid var(--color-border-secondary,#ccc);border-radius:8px;padding:9px 16px;font-size:12px;color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
+.btn-sec:hover{background:var(--color-background-secondary,#f5f5f5)}
+.res{border-radius:10px;padding:12px;font-size:12px;line-height:1.6;display:none}
+.res.show{display:block}
+.res.ok{background:#EAF3DE;border:0.5px solid #3B6D11}
+.res.no{background:#FAECE7;border:0.5px solid #993C1D}
+.res-title{font-size:13px;font-weight:500;margin-bottom:6px}
+.res.ok .res-title{color:#27500A}
+.res.no .res-title{color:#712B13}
+.res.ok p{color:#3B6D11}
+.res.no p{color:#993C1D}
+.final-box{margin-top:10px;padding:10px;background:var(--color-background-secondary,#f5f5f5);border-radius:8px;font-size:12px;color:var(--color-text-primary)}
+</style>
+
+<div class="wrap">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+    <h2>Thí nghiệm: Dung dịch</h2>
+    <span class="score" id="scoreBadge">0 / 3 đúng</span>
+  </div>
+  <p class="sub">Khoa học tự nhiên lớp 6 — Chọn chất, dự đoán, rồi bấm khuấy!</p>
+  <div class="prog-wrap"><div class="prog" id="prog" style="width:0%"></div></div>
+  <div class="dots"><div class="dot active" id="d0"></div><div class="dot" id="d1"></div><div class="dot" id="d2"></div></div>
+
+  <div class="card">
+    <div class="step-lbl" id="stepLbl">Thí nghiệm 1 / 3</div>
+    <div class="sec-title">Bước 1: Chọn chất bỏ vào nước</div>
+    <div class="sub-grid" id="subGrid"></div>
+    <div class="sec-title">Bước 2: Dự đoán kết quả</div>
+    <div class="pred-row">
+      <span class="pred-lbl">Chất này sẽ:</span>
+      <button class="pred-btn" id="pt" onclick="pickPred('tan')">Tan trong nước</button>
+      <button class="pred-btn" id="pk" onclick="pickPred('khong')">Không tan</button>
+    </div>
+    <div class="glass-area">
+      <canvas id="cv" width="160" height="180"></canvas>
+      <div class="glass-cap" id="cap">Ly nước đang chờ thí nghiệm...</div>
+    </div>
+    <div class="act-row">
+      <button class="btn-main" id="btnKhuay" disabled onclick="doExperiment()">Cho vào &amp; Khuấy</button>
+      <button class="btn-sec" id="btnNext" style="display:none" onclick="goNext()">Thí nghiệm tiếp →</button>
+    </div>
+    <div class="res" id="resCard">
+      <div class="res-title" id="resTitle"></div>
+      <p id="resTxt"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+var DATA = [
+  {id:'duong',name:'Đường',hint:'Glucose',icon:'🍬',tan:true,pc:'#EF9F27',dc:'rgba(239,159,39,0.2)',
+   ex:'Đường tan hoàn toàn vì phân tử đường nhỏ, phân cực và liên kết dễ dàng với nước. Hỗn hợp tạo thành là dung dịch trong suốt, đồng đều — đây là dung dịch thật sự!'},
+  {id:'muoi',name:'Muối',hint:'NaCl',icon:'🧂',tan:true,pc:'#3B8BD4',dc:'rgba(59,139,212,0.2)',
+   ex:'Muối (NaCl) tan vì ion Na⁺ và Cl⁻ bị phân tử nước bao vây và kéo ra. Dung dịch nước muối trong suốt và đồng đều — cũng là dung dịch thật sự!'},
+  {id:'cat',name:'Cát',hint:'SiO₂',icon:'⏳',tan:false,pc:'#888780',dc:'rgba(136,135,128,0.3)',
+   ex:'Cát không tan vì hạt SiO₂ quá lớn và không phân cực. Sau khi ngừng khuấy, cát lắng xuống đáy — đây là huyền phù, không phải dung dịch.'}
+];
+
+var step=0, score=0, chosen=null, pred=null, phase='idle', raf=null;
+var pts=[], t=0, ang=0;
+var order=[0,1,2];
+
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=a[i];a[i]=a[j];a[j]=tmp;}}
+
+function init(){
+  shuffle(order);
+  chosen=null; pred=null; phase='idle'; pts=[]; t=0; ang=0;
+  if(raf){cancelAnimationFrame(raf);raf=null;}
+  renderSubs();
+  document.getElementById('btnKhuay').disabled=true;
+  document.getElementById('btnNext').style.display='none';
+  document.getElementById('pt').classList.remove('sel');
+  document.getElementById('pk').classList.remove('sel');
+  document.getElementById('resCard').className='res';
+  document.getElementById('cap').textContent='Ly nước đang chờ thí nghiệm...';
+  document.getElementById('stepLbl').textContent='Thí nghiệm '+(step+1)+' / 3';
+  updateDots();
+  draw('idle',null,0);
+}
+
+function renderSubs(){
+  var g=document.getElementById('subGrid');
+  var trio=[DATA[order[step]]];
+  var rest=DATA.filter(function(d){return d.id!==trio[0].id;});
+  shuffle(rest); trio.push(rest[0]); trio.push(rest[1]);
+  shuffle(trio);
+  g.innerHTML=trio.map(function(s){
+    return '<button class="sub-btn" id="sb-'+s.id+'" onclick="pickSub(\''+s.id+'\')"><div class="sub-icon">'+s.icon+'</div><div class="sub-name">'+s.name+'</div><div class="sub-hint">'+s.hint+'</div></button>';
+  }).join('');
+}
+
+function pickSub(id){
+  if(phase!=='idle')return;
+  chosen=DATA.find(function(d){return d.id===id;});
+  document.querySelectorAll('.sub-btn').forEach(function(b){b.classList.remove('sel');});
+  document.getElementById('sb-'+id).classList.add('sel');
+  check();
+  draw('sel',chosen,0);
+  document.getElementById('cap').textContent='Đã chọn: '+chosen.name+'. Hãy dự đoán rồi bấm khuấy!';
+}
+
+function pickPred(v){
+  if(phase!=='idle')return;
+  pred=v;
+  document.getElementById('pt').classList.toggle('sel',v==='tan');
+  document.getElementById('pk').classList.toggle('sel',v==='khong');
+  check();
+}
+
+function check(){
+  document.getElementById('btnKhuay').disabled=!(chosen&&pred);
+}
+
+function doExperiment(){
+  if(!chosen||!pred)return;
+  phase='add'; t=0; ang=0;
+  genPts();
+  document.getElementById('btnKhuay').disabled=true;
+  document.querySelectorAll('.sub-btn').forEach(function(b){b.style.pointerEvents='none';});
+  document.getElementById('pt').style.pointerEvents='none';
+  document.getElementById('pk').style.pointerEvents='none';
+  loop();
+}
+
+function genPts(){
+  pts=[];
+  var n=chosen.id==='cat'?16:20;
+  for(var i=0;i<n;i++){
+    pts.push({x:75+(Math.random()-.5)*20,y:18,vx:(Math.random()-.5)*1.2,vy:1.2+Math.random()*1.2,
+      r:chosen.id==='cat'?2.5+Math.random()*2:1.8+Math.random()*1.8,
+      a:1,dl:Math.floor(Math.random()*35),settled:false,gone:false});
+  }
+}
+
+function loop(){
+  t++;
+  if(phase==='add'&&t>65){phase='stir';t=0;}
+  else if(phase==='stir'){
+    ang+=0.13;
+    if(t>100){phase='done';t=0;showResult();return;}
+  }
+  else if(phase==='settle'){
+    t++;
+  }
+
+  pts.forEach(function(p){
+    if(t<p.dl)return;
+    if(p.gone)return;
+    if(phase==='add'){
+      p.y+=p.vy; p.x+=p.vx;
+      if(p.y>148){p.y=148+Math.random()*8;p.vy=0;p.vx=0;}
+      p.x=Math.max(30,Math.min(130,p.x));
+    } else if(phase==='stir'){
+      if(chosen.tan){
+        p.a=Math.max(0,p.a-0.015);
+        if(p.a<=0)p.gone=true;
+      } else {
+        p.x+=Math.sin(ang+p.r)*1.3;
+        p.y+=Math.cos(ang*.7+p.r)*.8;
+        p.x=Math.max(30,Math.min(130,p.x));
+        p.y=Math.max(30,Math.min(155,p.y));
+      }
+    } else if(phase==='settle'&&!chosen.tan){
+      if(!p.settled){p.y+=.6;if(p.y>=150){p.y=150+Math.random()*8;p.settled=true;}}
+    }
+  });
+
+  draw(phase,chosen,t);
+  raf=requestAnimationFrame(loop);
+}
+
+function showResult(){
+  phase='settle';
+  var s=chosen;
+  var ok=(pred==='tan')===s.tan;
+  if(ok)score++;
+  document.getElementById('scoreBadge').textContent=score+' / 3 đúng';
+  var rc=document.getElementById('resCard');
+  rc.className='res show '+(ok?'ok':'no');
+  document.getElementById('resTitle').textContent=ok?'✓ Dự đoán đúng rồi! Giỏi lắm!':'✗ Chưa đúng — nhưng học được rồi!';
+  var tanTxt=s.tan?'→ TAN hoàn toàn (tạo dung dịch trong suốt)':'→ KHÔNG TAN — lắng xuống đáy (huyền phù)';
+  document.getElementById('resTxt').innerHTML='<strong>'+s.name+' '+s.hint+'</strong> '+tanTxt+'<br><br>'+s.ex;
+  document.getElementById('cap').textContent=s.tan?s.name+' đã tan hoàn toàn!':s.name+' lắng xuống đáy!';
+
+  if(step<2){
+    document.getElementById('btnNext').style.display='inline-block';
+  } else {
+    showFinal();
+  }
+  setTimeout(function(){
+    cancelAnimationFrame(raf);
+    draw('final',chosen,0);
+  },1500);
+}
+
+function draw(ph,s,ti){
+  var cv=document.getElementById('cv');
+  var ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,160,180);
+  var dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
+  var wc=dark?'rgba(59,139,212,0.35)':'rgba(59,139,212,0.2)';
+  var gs=dark?'rgba(200,200,200,0.3)':'rgba(80,80,80,0.28)';
+
+  // glass body
+  ctx.beginPath();
+  ctx.moveTo(28,24);ctx.lineTo(22,162);
+  ctx.quadraticCurveTo(22,170,30,170);
+  ctx.lineTo(130,170);ctx.quadraticCurveTo(138,170,138,162);
+  ctx.lineTo(132,24);ctx.closePath();
+  ctx.fillStyle=dark?'rgba(40,45,60,0.4)':'rgba(210,230,250,0.3)';
+  ctx.fill();
+
+  // water
+  ctx.beginPath();
+  ctx.moveTo(30,38);ctx.lineTo(26,163);
+  ctx.quadraticCurveTo(26,167,33,167);
+  ctx.lineTo(127,167);ctx.quadraticCurveTo(134,167,134,163);
+  ctx.lineTo(130,38);ctx.closePath();
+  ctx.fillStyle=wc;ctx.fill();
+
+  // dissolved tint
+  if(s&&ph==='stir'&&s.tan){
+    var prog=Math.min(1,ti/90);
+    ctx.beginPath();
+    ctx.moveTo(30,38);ctx.lineTo(26,163);
+    ctx.quadraticCurveTo(26,167,33,167);
+    ctx.lineTo(127,167);ctx.quadraticCurveTo(134,167,134,163);
+    ctx.lineTo(130,38);ctx.closePath();
+    ctx.fillStyle=s.dc.replace('0.2',''+(.2*prog).toFixed(2));
+    ctx.fill();
+  }
+  if(s&&(ph==='final'||ph==='done')&&s.tan){
+    ctx.beginPath();
+    ctx.moveTo(30,38);ctx.lineTo(26,163);
+    ctx.quadraticCurveTo(26,167,33,167);
+    ctx.lineTo(127,167);ctx.quadraticCurveTo(134,167,134,163);
+    ctx.lineTo(130,38);ctx.closePath();
+    ctx.fillStyle=s.dc;ctx.fill();
+  }
+
+  // particles
+  if(s){
+    pts.forEach(function(p){
+      if(p.gone)return;
+      ctx.save();
+      ctx.globalAlpha=p.a;
+      ctx.beginPath();
+      if(s.id==='cat'){ctx.rect(p.x-p.r,p.y-p.r*.5,p.r*2,p.r);}
+      else{ctx.arc(p.x,p.y,p.r,0,Math.PI*2);}
+      ctx.fillStyle=s.pc;ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  // spoon
+  if(ph==='stir'){
+    ctx.save();ctx.translate(80,88);ctx.rotate(Math.sin(ang)*.38);
+    ctx.strokeStyle=dark?'#c2c0b6':'#666';ctx.lineWidth=2.5;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(0,-52);ctx.lineTo(0,18);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(0,24,6,4,0,0,Math.PI*2);
+    ctx.fillStyle=dark?'#aaa':'#888';ctx.fill();
+    ctx.restore();
+  }
+
+  // glass outline
+  ctx.beginPath();
+  ctx.moveTo(28,24);ctx.lineTo(22,162);
+  ctx.quadraticCurveTo(22,170,30,170);
+  ctx.lineTo(130,170);ctx.quadraticCurveTo(138,170,138,162);
+  ctx.lineTo(132,24);
+  ctx.lineWidth=1.5;ctx.strokeStyle=gs;ctx.stroke();
+  // rim
+  ctx.beginPath();ctx.moveTo(24,24);ctx.lineTo(136,24);
+  ctx.lineWidth=2;ctx.stroke();
+  // handle
+  ctx.beginPath();ctx.moveTo(132,60);
+  ctx.quadraticCurveTo(148,78,148,100);
+  ctx.quadraticCurveTo(148,122,133,133);
+  ctx.lineWidth=2;ctx.strokeStyle=gs;ctx.stroke();
+
+  // result text in glass
+  if(s&&(ph==='final'||ph==='done')){
+    ctx.textAlign='center';ctx.font='500 11px sans-serif';
+    if(s.tan){ctx.fillStyle=dark?'#9FE1CB':'#0F6E56';ctx.fillText('Tan hoàn toàn!',80,105);ctx.fillText('Dung dịch trong suốt',80,119);}
+    else{ctx.fillStyle=dark?'#FAC775':'#854F0B';ctx.fillText('Cát lắng đáy!',80,105);ctx.fillText('Không phải dung dịch',80,119);}
+  }
+}
+
+function goNext(){
+  step++;
+  chosen=null; pred=null; phase='idle'; pts=[]; t=0; ang=0;
+  if(raf){cancelAnimationFrame(raf);raf=null;}
+  document.getElementById('btnNext').style.display='none';
+  document.getElementById('btnKhuay').disabled=true;
+  document.getElementById('pt').classList.remove('sel');document.getElementById('pk').classList.remove('sel');
+  document.getElementById('pt').style.pointerEvents='auto';document.getElementById('pk').style.pointerEvents='auto';
+  document.querySelectorAll('.sub-btn').forEach(function(b){b.style.pointerEvents='auto';});
+  document.getElementById('resCard').className='res';
+  document.getElementById('cap').textContent='Ly nước đang chờ thí nghiệm...';
+  document.getElementById('stepLbl').textContent='Thí nghiệm '+(step+1)+' / 3';
+  document.getElementById('prog').style.width=(step/3*100)+'%';
+  updateDots();
+  renderSubs();
+  draw('idle',null,0);
+}
+
+function updateDots(){
+  for(var i=0;i<3;i++){
+    var d=document.getElementById('d'+i);
+    d.className='dot'+(i<step?' done':i===step?' active':'');
+  }
+}
+
+function showFinal(){
+  document.getElementById('prog').style.width='100%';
+  for(var i=0;i<3;i++)document.getElementById('d'+i).className='dot done';
+  var msg=score===3?'🎉 Xuất sắc! Đúng cả 3! Bạn hiểu rất rõ về dung dịch!':
+    score===2?'👍 Tốt lắm! 2/3 — Xem lại bài về chất tan và dung môi nhé!':
+    '📚 Cố lên! Ôn lại bài về dung dịch và thử lại nhé!';
+  var rc=document.getElementById('resCard');
+  rc.innerHTML+='<div class="final-box">'+msg+'<br><button onclick="resetAll()" style="margin-top:8px;font-size:12px;cursor:pointer;border:none;background:#3B8BD4;color:#fff;border-radius:6px;padding:5px 12px">Thử lại từ đầu</button></div>';
+}
+
+function resetAll(){
+  step=0;score=0;
+  document.getElementById('scoreBadge').textContent='0 / 3 đúng';
+  document.getElementById('prog').style.width='0%';
+  shuffle(order);
+  init();
+}
+
+init();
+</script>
